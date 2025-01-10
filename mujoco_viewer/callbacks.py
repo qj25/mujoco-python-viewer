@@ -29,7 +29,7 @@ class Callbacks:
         self._convex_hull_rendering = False
         self._inertias = False
         self._com = False
-        self._render_every_frame = True
+        self._render_every_frame = False
         self._image_idx = 0
         self._image_path = "/tmp/frame_%07d.png"
         self._time_per_render = 1 / 60.0
@@ -80,6 +80,7 @@ class Callbacks:
             self._contacts = not self._contacts
             self.vopt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = self._contacts
             self.vopt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTFORCE] = self._contacts
+            self.vopt.flags[mujoco.mjtVisFlag.mjVIS_PERTFORCE] = self._contacts
         elif key == glfw.KEY_J:
             self._joints = not self._joints
             self.vopt.flags[mujoco.mjtVisFlag.mjVIS_JOINT] = self._joints

@@ -1,3 +1,5 @@
+qj25 fork - add contact force, maybe sliders in future
+
 # Viewer for MuJoCo in Python
 
 Interactive renderer to use with the official Python bindings for MuJoCo.

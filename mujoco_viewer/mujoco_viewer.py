@@ -8,6 +8,31 @@ from .callbacks import Callbacks
 
 MUJOCO_VERSION = tuple(map(int, mujoco.__version__.split('.')))
 
+"""
+<MjvPerturb
+  active: 0 // perturbation bitmask (mjtPertBit) 1 for transl, 2 for rot
+  active2: 0
+  flexselect: -1
+  // local inertia / mass
+  localmass: 0.17275486977674956
+  // local position of selected point
+  localpos: array([ 0.5024314553687269 , -0.01066788280805119, -0.01054496450417701])
+  // world position of body CoM
+  // -- need to update 'select' manually 
+  // then call mjv_initPerturb to update this value
+  refpos: array([ 1.2928932161725855e+00, -1.7259088811095098e-17,
+       -1.2078298182711122e+00])
+  refquat: array([ 7.071067811865307e-01, -4.145100959892380e-15,
+        7.071067811865642e-01, -4.099220295187813e-15])
+  // world position of selected point 
+  // -- need to update 'localpos' manually 
+  // then call mjv_initPerturb to update this value
+  refselpos: array([ 1.290461760803859  , -0.01066788280805108, -1.197284853766935  ])
+  scale: 2.2178547810699767
+  select: 8 // selected body id; non-positive: none
+  skinselect: -1
+>
+"""
 
 class MujocoViewer(Callbacks):
     def __init__(
@@ -472,6 +497,22 @@ class MujocoViewer(Callbacks):
 
         # apply perturbation (should this come before mj_step?)
         self.apply_perturbations()
+
+    def getuserFT(self):
+        force_active = self.pert.active
+        local_pos = self.pert.localpos.copy()
+        world_pos = np.zeros(3)
+        # get position of body
+        b_pos = self.data.xpos[self.pert.select].copy()
+        b_quat = self.data.xquat[self.pert.select].copy()
+        # Rotate local position into world frame
+        mujoco.mju_rotVecQuat(world_pos, local_pos, b_quat)
+        # Translate into world space
+        mujoco.mju_addTo3(world_pos, b_pos)
+        mag_force = self.data.xfrc_applied[
+            self.pert.select
+        ].copy()
+        return world_pos, mag_force, force_active
 
     def close(self):
         self.is_alive = False

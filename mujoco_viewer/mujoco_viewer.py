@@ -362,7 +362,7 @@ class MujocoViewer(Callbacks):
 
     def apply_perturbations(self):
         self.data.xfrc_applied = np.zeros_like(self.data.xfrc_applied)
-        mujoco.mjv_applyPerturbPose(self.model, self.data, self.pert, 0)
+        # mujoco.mjv_applyPerturbPose(self.model, self.data, self.pert, 0)
         mujoco.mjv_applyPerturbForce(self.model, self.data, self.pert)
 
     def read_pixels(self, camid=None, depth=False):

@@ -37,6 +37,8 @@ class Callbacks:
         self._loop_count = 0
         self._advance_by_one_step = False
         self._hide_menus = hide_menus
+        
+        self.toggle_custom = 0
 
     def _key_callback(self, window, key, scancode, action, mods):
         if action != glfw.RELEASE:
@@ -145,6 +147,10 @@ class Callbacks:
                 print("Camera config saved at {}".format(self.CONFIG_PATH))
             except Exception as e:
                 print(e)
+        elif key == glfw.KEY_K:
+            self.toggle_custom += 1
+            if self.toggle_custom > 2:
+                self.toggle_custom = 0
         # Quit
         if key == glfw.KEY_ESCAPE:
             print("Pressed ESC")

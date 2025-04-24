@@ -159,6 +159,40 @@ class MujocoViewer(Callbacks):
         self._overlay = {}
         self._markers = []
 
+    def add_vector_marker(self, start, vec, color=[1, 0, 0, 0.5], width=0.02):
+        vec = np.array(vec)
+        length = np.linalg.norm(vec)
+        if length < 1e-8:
+            return  # too short to draw
+
+        mid = np.array(start) + vec / 2
+        direction = vec / length
+
+        # Compute quaternion aligning z-axis with `direction`
+        z_axis = np.array([0, 0, 1])
+        axis = np.cross(z_axis, direction)
+        angle = np.arccos(np.clip(np.dot(z_axis, direction), -1.0, 1.0))
+
+        if np.linalg.norm(axis) < 1e-8:
+            quat = np.array([1, 0, 0, 0]) if angle < 1e-6 else np.array([0, 1, 0, 0])
+        else:
+            axis = axis / np.linalg.norm(axis)
+            half_angle = angle / 2
+            quat = np.concatenate([[np.cos(half_angle)], np.sin(half_angle) * axis])
+            mat = np.zeros(9)
+            mujoco.mju_quat2Mat(mat,quat)
+            mat = mat.reshape((3,3))
+
+        # Add the marker as a capsule
+        marker = {
+            "type": mujoco.mjtGeom.mjGEOM_CAPSULE,
+            "size": [width,width, length / 2],  # [radius, half-length]
+            "pos": mid,
+            "mat": mat,
+            "rgba": color,
+        }
+        self.add_marker(**marker)
+
     def add_line_to_fig(self, line_name, fig_idx=0):
         assert isinstance(line_name, str), \
             "Line name must be a string."
@@ -209,20 +243,15 @@ class MujocoViewer(Callbacks):
 
     def _add_marker_to_scene(self, marker):
         if self.scn.ngeom >= self.scn.maxgeom:
-            raise RuntimeError(
-                'Ran out of geoms. maxgeom: %d' %
-                self.scn.maxgeom)
+            raise RuntimeError(f'Ran out of geoms. maxgeom: {self.scn.maxgeom}')
 
         g = self.scn.geoms[self.scn.ngeom]
-        # default values.
+        
+        # Safe subset of fields
         g.dataid = -1
         g.objtype = mujoco.mjtObj.mjOBJ_UNKNOWN
         g.objid = -1
         g.category = mujoco.mjtCatBit.mjCAT_DECOR
-        g.texid = -1
-        g.texuniform = 0
-        g.texrepeat[0] = 1
-        g.texrepeat[1] = 1
         g.emission = 0
         g.specular = 0.5
         g.shininess = 0.5
@@ -239,21 +268,11 @@ class MujocoViewer(Callbacks):
                 attr = getattr(g, key)
                 attr[:] = np.asarray(value).reshape(attr.shape)
             elif isinstance(value, str):
-                assert key == "label", "Only label is a string in mjtGeom."
-                if value is None:
-                    g.label[0] = 0
-                else:
+                if key == "label":
                     g.label = value
-            elif hasattr(g, key):
-                raise ValueError(
-                    "mjtGeom has attr {} but type {} is invalid".format(
-                        key, type(value)))
             else:
-                raise ValueError("mjtGeom doesn't have field %s" % key)
-
+                raise ValueError(f"Invalid attribute or type for '{key}': {type(value)}")
         self.scn.ngeom += 1
-
-        return
 
     def _create_overlay(self):
         topleft = mujoco.mjtGridPos.mjGRID_TOPLEFT
@@ -412,7 +431,6 @@ class MujocoViewer(Callbacks):
         if glfw.window_should_close(self.window):
             self.close()
             return
-
         # mjv_updateScene, mjr_render, mjr_overlay
         def update():
             # fill overlay items

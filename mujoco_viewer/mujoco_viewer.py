@@ -185,9 +185,10 @@ class MujocoViewer(Callbacks):
 
         # Add the marker as a capsule
         marker = {
-            "type": mujoco.mjtGeom.mjGEOM_CAPSULE,
+            # "type": mujoco.mjtGeom.mjGEOM_CAPSULE,
+            "type": mujoco.mjtGeom.mjGEOM_ARROW,
             "size": [width,width, length / 2],  # [radius, half-length]
-            "pos": mid,
+            "pos": start,
             "mat": mat,
             "rgba": color,
         }

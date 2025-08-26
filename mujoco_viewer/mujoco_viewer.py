@@ -179,9 +179,9 @@ class MujocoViewer(Callbacks):
             axis = axis / np.linalg.norm(axis)
             half_angle = angle / 2
             quat = np.concatenate([[np.cos(half_angle)], np.sin(half_angle) * axis])
-            mat = np.zeros(9)
-            mujoco.mju_quat2Mat(mat,quat)
-            mat = mat.reshape((3,3))
+        mat = np.zeros(9)
+        mujoco.mju_quat2Mat(mat,quat)
+        mat = mat.reshape((3,3))
 
         # Add the marker as a capsule
         marker = {

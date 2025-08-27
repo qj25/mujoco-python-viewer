@@ -97,6 +97,7 @@ class MujocoViewer(Callbacks):
         self.cam = mujoco.MjvCamera()
         self.scn = mujoco.MjvScene(self.model, maxgeom=10000)
         self.pert = mujoco.MjvPerturb()
+        self.perturbation_scale = 1.0
 
         self.ctx = mujoco.MjrContext(
             self.model, mujoco.mjtFontScale.mjFONTSCALE_150.value)

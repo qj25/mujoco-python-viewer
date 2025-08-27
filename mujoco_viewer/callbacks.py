@@ -178,12 +178,13 @@ class Callbacks:
 
         with self._gui_lock:
             if self.pert.active:
+                # Apply perturbation scaling factor (2.0 doubles the magnitude)
                 mujoco.mjv_movePerturb(
                     self.model,
                     self.data,
                     action,
-                    dx / height,
-                    dy / height,
+                    self.perturbation_scale * dx / height,
+                    self.perturbation_scale * dy / height,
                     self.scn,
                     self.pert)
             else:

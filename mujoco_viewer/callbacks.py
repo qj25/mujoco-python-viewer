@@ -82,6 +82,7 @@ class Callbacks:
             self._contacts = not self._contacts
             self.vopt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = self._contacts
             self.vopt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTFORCE] = self._contacts
+            # Uncomment the line below if you want perturbation forces tied to contact forces
             self.vopt.flags[mujoco.mjtVisFlag.mjVIS_PERTFORCE] = self._contacts
         elif key == glfw.KEY_J:
             self._joints = not self._joints
@@ -246,6 +247,11 @@ class Callbacks:
                     self.model, self.data, self.scn, self.pert)
         self.pert.active = newperturb
 
+        # print("x = ", x)
+        # print("y = ", y)
+        # print("size_x = ", self.viewport.width)
+        # print("size_y = ", self.viewport.height)
+
         # handle doubleclick
         if self._left_double_click_pressed or self._right_double_click_pressed:
             # determine selection mode
@@ -260,7 +266,7 @@ class Callbacks:
             # find geom and 3D click point, get corresponding body
             width, height = self.viewport.width, self.viewport.height
             aspectratio = width / height
-            relx = x / width
+            relx = (x) / width
             rely = (self.viewport.height - y) / height
             selpnt = np.zeros((3, 1), dtype=np.float64)
             selgeom = np.zeros((1, 1), dtype=np.int32)
@@ -312,8 +318,7 @@ class Callbacks:
                     # compute localpos
                     vec = selpnt.flatten() - self.data.xpos[selbody]
                     mat = self.data.xmat[selbody].reshape(3, 3)
-                    self.pert.localpos = self.data.xmat[selbody].reshape(
-                        3, 3).dot(vec)
+                    self.pert.localpos = mat.T.dot(vec)
                 else:
                     self.pert.select = 0
                     self.pert.skinselect = -1

@@ -94,6 +94,19 @@ class MujocoViewer(Callbacks):
 
         # create options, camera, scene, context
         self.vopt = mujoco.MjvOption()
+        # Disable perturbation force visualization
+        self.vopt.flags[mujoco.mjtVisFlag.mjVIS_PERTFORCE] = False
+        # Disable perturbation object visualization (this is the ball/cylinder)
+        self.vopt.flags[mujoco.mjtVisFlag.mjVIS_PERTOBJ] = False
+        # Disable all perturbation-related visualizations
+        try:
+            self.vopt.flags[mujoco.mjtVisFlag.mjVIS_PERTURB] = False
+        except AttributeError:
+            pass  # This flag might not exist in all MuJoCo versions
+        try:
+            self.vopt.flags[mujoco.mjtVisFlag.mjVIS_SELECT] = False
+        except AttributeError:
+            pass  # This flag might not exist in all MuJoCo versions
         self.cam = mujoco.MjvCamera()
         self.scn = mujoco.MjvScene(self.model, maxgeom=10000)
         self.pert = mujoco.MjvPerturb()
@@ -442,8 +455,23 @@ class MujocoViewer(Callbacks):
 
             width, height = glfw.get_framebuffer_size(self.window)
             self.viewport.width, self.viewport.height = width, height
-
             with self._gui_lock:
+                # # Print all vopt flags related to perturbation and selection
+                # print("=== vopt flags at render ===")
+                # for flag_name in dir(mujoco.mjtVisFlag):
+                #     if 'PERT' in flag_name or 'SELECT' in flag_name or 'CONTACT' in flag_name:
+                #         try:
+                #             flag_value = getattr(mujoco.mjtVisFlag, flag_name)
+                #             flag_state = self.vopt.flags[flag_value]
+                #             print(f"{flag_name}: {flag_state}")
+                #         except (AttributeError, IndexError) as e:
+                #             print(f"{flag_name}: Error accessing flag - {e}")
+                
+                # # Print perturbation state
+                # print(f"pert.active: {self.pert.active}")
+                # print(f"pert.select: {self.pert.select}")
+                # print("==========================")
+                
                 # update scene
                 mujoco.mjv_updateScene(
                     self.model,

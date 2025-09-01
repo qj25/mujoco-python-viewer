@@ -84,6 +84,11 @@ class Callbacks:
             self.vopt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTFORCE] = self._contacts
             # Uncomment the line below if you want perturbation forces tied to contact forces
             self.vopt.flags[mujoco.mjtVisFlag.mjVIS_PERTFORCE] = self._contacts
+        elif key == glfw.KEY_PAGE_DOWN:
+            if self.pert.select > 0:
+                self.pert.select -= 1
+        elif key == glfw.KEY_PAGE_UP:
+            self.pert.select += 1
         elif key == glfw.KEY_J:
             self._joints = not self._joints
             self.vopt.flags[mujoco.mjtVisFlag.mjVIS_JOINT] = self._joints
